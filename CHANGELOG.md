@@ -18,6 +18,17 @@ release. They will however *never* happen in a patch release.
 
 [Changes rendered on Codeberg][Upcoming/diff]
 
+## Changed
+- Removed the (yanked) core2 dependency.
+  While this change is purely by the letter of semver a breaking change that
+  should result in a major release version I know of no usage of rsasl that
+  uses it with types that do not implement the `std::io` traits.  So, keeping
+  with the spirit of semver instead this change is a minor release. Please open
+  an issue in case this change breaks your code.
+
+## Fixed
+- #87 — Dependency core2 yanked
+
 # [v2.2.1] — 2026-02-10
 
 [Changes rendered on Codeberg][v2.2.1/diff]

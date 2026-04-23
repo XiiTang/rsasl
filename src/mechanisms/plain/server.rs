@@ -4,7 +4,7 @@ use crate::error::SessionError;
 use crate::mechanism::Authentication;
 use crate::property::{AuthId, AuthzId, Password};
 use crate::session::{MechanismData, MessageSent, State};
-use core2::io::Write;
+use crate::io::Write;
 use stringprep::saslprep;
 
 #[derive(Debug)]

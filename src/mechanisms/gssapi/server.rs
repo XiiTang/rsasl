@@ -6,7 +6,7 @@ use crate::prelude::State::Finished;
 use crate::session::MessageSent;
 use alloc::mem;
 use core::fmt;
-use core2::io::Write;
+use crate::io::Write;
 use libgssapi::context::{CtxFlags, SecurityContext, ServerCtx};
 use libgssapi::credential::{Cred, CredUsage};
 use libgssapi::oid::{OidSet, GSS_MECH_KRB5};

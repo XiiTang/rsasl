@@ -299,6 +299,7 @@ pub mod registry;
 mod channel_bindings;
 mod context;
 
+mod io;
 mod vectored_io;
 
 pub mod prelude {
@@ -324,7 +325,6 @@ pub mod prelude {
 pub mod test;
 
 #[cfg(all(doc, not(doctest)))]
-#[allow(rustdoc::bare_urls)]
 pub mod docs {
     //! Modules purely for documentation
 

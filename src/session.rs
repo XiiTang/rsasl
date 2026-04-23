@@ -28,7 +28,7 @@ mod provider {
     use crate::mechname::Mechname;
     use crate::sasl::Sasl;
     use crate::validate::{NoValidation, Validation};
-    use core2::io::Write;
+    use crate::io::Write;
 
     /// This represents a single authentication exchange
     ///

@@ -5,7 +5,7 @@ use crate::mechanisms::oauthbearer::parser::OAuthBearerMsg;
 use crate::mechanisms::oauthbearer::properties::{Error, OAuthBearerValidate};
 use crate::property::{AuthzId, OAuthBearerKV, OAuthBearerToken};
 use crate::session::MessageSent;
-use alloc::io::Write;
+use crate::io::Write;
 
 #[derive(Debug, Clone, Default)]
 pub struct OAuthBearer {

@@ -4,7 +4,7 @@ use crate::mechanism::Authentication;
 use crate::property::AuthzId;
 use crate::session::{MechanismData, MessageSent, State};
 use core::str::Utf8Error;
-use core2::io::Write;
+use crate::io::Write;
 use thiserror::Error;
 
 #[derive(Debug, Eq, PartialEq, Copy, Clone, Error)]

@@ -3,7 +3,7 @@ use crate::error::SessionError;
 use crate::mechanism::Authentication;
 use crate::property::AuthzId;
 use crate::session::{MechanismData, MessageSent, State};
-use core2::io::Write;
+use crate::io::Write;
 
 #[derive(Copy, Clone, Debug)]
 pub struct External;

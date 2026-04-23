@@ -6,7 +6,7 @@ use crate::prelude::SessionError;
 use crate::property::{AuthId, Password};
 use crate::session::{MechanismData, MessageSent, State};
 use core::str::Utf8Error;
-use core2::io::Write;
+use crate::io::Write;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
