@@ -4,18 +4,51 @@ First: If you are unsure or afraid of *anything*, just ask or submit the issue o
 yelled at for giving it your best efford. The worst that can happen is that you'll be politely asked to change
 something. We appreciate any sort of contributions, and don't want a wall of rules to get in the way of that.
 
-rsasl welcomes contributions from everyone. Here are the guidelines if you are thinking about helping us:
+rsasl welcomes contributions from everyone; irrespective of disability, skin colour, gender, religion, or fluidity in written English.
+We'd rather have a pull request or issue in rough, automatically translated, English than miss out on your contribution.
+Here are the guidelines if you are thinking about helping us:
+
+We expect contributors to adhere to the ethos of the project.
+
+Source code is not an artifact, an intermediate representation, nor a
+bothersome annoyance whose creation is to be offloaded to metal and
+transistors. Source code is a source of truth - the only source of truth that
+constitutes this software project - and it deserves to be understood and
+curated by the accountable and reasoned mind of a human being.
+
+Please refrain from contributing changes that you have not personally
+understood and instigated the authorship of. We do not expect perfection, but
+we do expect you to personally understand your own motivations and decisions.
+
+
+## Code of conduct
+
+rsasl follows the [Rust CoC](https://www.rust-lang.org/policies/code-of-conduct).
+
 
 ## Contributions
 
-Contributions to rsasl should be made in the form of GitHub Pull Requests. 
+Contributions to rsasl should be made in the form of Pull Requests on [Codeberg](https://codeberg.org/dequbed/rsasl). The [GitHub mirror](https://github.com/dequbed/rsasl) is not monitored actively, so pull requests there will be slower to be reviewed.
 
-Issues that we think are easy to get started on are marked with the label ["good first issue"](https://github.com/dequbed/rsasl/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
+Issues that we think are easy to get started on are marked with the label ["good first issue"](https://codeberg.org/dequbed/rsasl/issues?labels=1457526).
 These issues will generally also contain a sentence or two on the reasons why this issue is considered a good first issue.
 
 Should you want to work on an issue please claim the issue first by commenting that you want to work on it. This is 
 to prevent duplicate work on the same issue. If somebody else is already working on an issue they may be happy to work 
 together with you too!
+
+
+## Use of Large Language Models ('LLMs' or 'AI')
+
+We do not allow contributions that have been authored, completely or in part, by large language models.
+
+Contributors that feel the need to use such models may use them in 'read-only' mode (i.e: as a means of explaining the function of
+the codebase). You are expected to fully check the model's reasoning before taking it at its word.
+
+We expect both code contributors and issue reporters to understand the meaning of their contributions and reports in a human
+capacity, and to be able to vouch for and justify their work. Attempting to circumvent the spirit of this principle is not
+permitted.
+
 
 ### Pull Request checklist
 
@@ -30,10 +63,11 @@ together with you too!
 
 - To make bisecting issues easier commits should be small but independent (i.e. compile and be testable). A good 
   guideline for commit size is in fact the smallest set of changes that compiles and passes tests. If a change 
-  affects a hundred files, a 'small' commit can very much span all those hundred files.
+  affects a hundred files, a 'small' commit may just have to span all those hundred files.
 
-- rsasl uses a merge-focused workflow. Rebases should only happen to update a feature branch to the latest upstream 
-  development or similar. Additionally, please do not squash a PR into a single commit unless it is a very small change.
+- rsasl uses a merge-focused workflow. Rebases should only happen to update a feature branch to the latest upstream
+  `development` or similar. Additionally, please do not squash PRs into a single commit unless a change is quite small.
+
 
 ## Release workflow
 

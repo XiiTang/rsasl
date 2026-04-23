@@ -1,4 +1,4 @@
-use core2::io::{self, IoSlice, Write};
+use crate::io::{self, IoSlice, Write};
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 /// An adapter that allows to more comfortable write using scatter-gather IO by handing the

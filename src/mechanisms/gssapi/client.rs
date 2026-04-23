@@ -5,7 +5,7 @@ use crate::mechanisms::gssapi::properties::{Error, GssSecurityLayer, GssService,
 use crate::property::Hostname;
 use crate::session::MessageSent;
 use core::fmt;
-use core2::io::Write;
+use crate::io::Write;
 use libgssapi::context::{ClientCtx, CtxFlags, SecurityContext};
 use libgssapi::credential::{Cred, CredUsage};
 use libgssapi::name::Name;

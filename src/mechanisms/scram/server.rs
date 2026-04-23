@@ -14,7 +14,7 @@ use crate::session::{MechanismData, MessageSent, State};
 use crate::vectored_io::VectoredWriter;
 use base64::Engine;
 use core::marker::PhantomData;
-use core2::io::Write;
+use crate::io::Write;
 use digest::crypto_common::BlockSizeUser;
 use digest::generic_array::GenericArray;
 use digest::{Digest, FixedOutput, OutputSizeUser};

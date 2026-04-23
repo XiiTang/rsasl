@@ -41,7 +41,7 @@ pub enum SessionError {
     #[error("IO error occurred")]
     Io {
         #[from]
-        source: core2::io::Error,
+        source: crate::io::Error,
     },
 
     #[cfg(feature = "provider_base64")]

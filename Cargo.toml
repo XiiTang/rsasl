@@ -1,11 +1,11 @@
 [package]
 name = "rsasl"
-version = "2.2.1"
-authors = ["Nadja Reitzenstein <me@dequbed.space>"]
+version = "2.3.0"
+authors = ["Nadja Reitzenstein <dequbed@paranoidlabs.org>"]
 categories = ["authentication", "api-bindings", "network-programming"]
 documentation = "https://docs.rs/rsasl"
 edition = "2021"
-homepage = "https://github.com/dequbed/rsasl"
+homepage = "https://codeberg.org/dequbed/rsasl"
 # Manually list files to include; excluding out-of-tree integration tests and testing binaries that arent useful when
 # rsasl is only used as a dependency.
 include = [
@@ -22,7 +22,7 @@ include = [
 keywords = ["sasl", "authentication", "sso", "framework", "middleware"]
 license = "Apache-2.0 OR MIT"
 readme = "README.md"
-repository = "https://github.com/dequbed/rsasl"
+repository = "https://codeberg.org/dequbed/rsasl"
 rust-version = "1.65.0"
 description = """
 The Rust SASL framework, aimed at both middleware-style protocol implementation and application code.
@@ -108,12 +108,11 @@ unstable_custom_mechanism = ["std"]
 ## Enable use of libstd
 ## If this flag is not set, rsasl is marked !\[no_std\]. However, currently this flag will *always* be enabled as core
 ## parts of rsasl depend on the stdlib.
-std = ["core2/std", "serde_json/std"]
+std = ["serde_json/std"]
 
 [dependencies]
 base64 = { version = "0.22.1", optional = true }
 bitflags = { version = "2.6.0", optional = true }
-core2 = { version = "0.4.0", default-features = false }
 digest = { version = "0.10.7", optional = true }
 document-features = { version = "0.2.10", optional = true }
 hmac = { version = "0.12.1", optional = true, features = ["reset"] }

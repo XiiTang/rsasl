@@ -299,6 +299,7 @@ pub mod registry;
 mod channel_bindings;
 mod context;
 
+mod io;
 mod vectored_io;
 
 pub mod prelude {

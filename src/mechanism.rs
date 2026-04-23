@@ -2,7 +2,7 @@
 //!
 //!
 use crate::error::SessionError::NoSecurityLayer;
-use core2::io::Write;
+use crate::io::Write;
 
 #[cfg(any(doc, feature = "unstable_custom_mechanism"))]
 pub use crate::context::{Demand, DemandReply, EmptyProvider, Provider, ProviderExt, ThisProvider};

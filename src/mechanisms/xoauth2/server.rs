@@ -6,7 +6,7 @@ use crate::mechanisms::xoauth2::properties::XOAuth2Validate;
 use crate::property::{AuthId, OAuthBearerToken};
 use crate::session::MessageSent;
 use core::str::Utf8Error;
-use core2::io::Write;
+use crate::io::Write;
 use thiserror::Error;
 
 #[derive(Debug, Clone, Default)]
