@@ -1,6 +1,6 @@
 [package]
 name = "rsasl"
-version = "2.2.1"
+version = "2.3.0"
 authors = ["Nadja Reitzenstein <dequbed@paranoidlabs.org>"]
 categories = ["authentication", "api-bindings", "network-programming"]
 documentation = "https://docs.rs/rsasl"

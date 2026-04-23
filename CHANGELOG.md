@@ -18,6 +18,11 @@ release. They will however *never* happen in a patch release.
 
 [Changes rendered on Codeberg][Upcoming/diff]
 
+
+# [v2.3.0] — 2026-04-23
+
+[Changes rendered on Codeberg][v2.3.0/diff]
+
 ## Changed
 - Removed the (yanked) core2 dependency.
   While this change is purely by the letter of semver a breaking change that
@@ -294,7 +299,9 @@ making this release possible.**
 
 [Upcoming Changes]: https://codeberg.org/dequbed/rsasl/src/branch/development
 <!-- next-url -->
-[Upcoming/diff]: https://codeberg.org/dequbed/rsasl/compare/v2.2.1...development
+[Upcoming/diff]: https://codeberg.org/dequbed/rsasl/compare/v2.3.0...development
+[v2.3.0]: https://codeberg.org/dequbed/rsasl/releases/tag/v2.3.0
+[v2.3.0/diff]: https://codeberg.org/dequbed/rsasl/compare/v2.2.1...v2.3.0
 [v2.2.1]: https://codeberg.org/dequbed/rsasl/releases/tag/v2.2.1
 [v2.2.1/diff]: https://codeberg.org/dequbed/rsasl/compare/v2.2.0...v2.2.1
 [v2.2.0]: https://codeberg.org/dequbed/rsasl/releases/tag/v2.2.0
