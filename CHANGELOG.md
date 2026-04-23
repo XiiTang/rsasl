@@ -18,6 +18,12 @@ release. They will however *never* happen in a patch release.
 
 [Changes rendered on Codeberg][Upcoming/diff]
 
+## Changed
+- The parser for SCRAM authentication (shared between SCRAM-SHA-1, SCRAM-SHA-256, SCRAM-SHA-256, and their respective -PLUS variants) 
+  now properly parses extensions. No extensions are implemented by rsasl so all non-mandatory extensions are ignored.
+
+## Fixed
+- #65 — (SCRAM) InvalidAttribute error when faced with optional or mandatory extension attributes
 
 # [v2.3.0] — 2026-04-23
 
