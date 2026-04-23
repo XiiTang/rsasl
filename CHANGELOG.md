@@ -19,6 +19,17 @@ release. They will however *never* happen in a patch release.
 [Changes rendered on Codeberg][Upcoming/diff]
 
 
+# [v2.3.1] — 2026-04-23
+
+[Changes rendered on Codeberg][v2.3.1/diff]
+
+## Changed
+- The parser for SCRAM authentication (shared between SCRAM-SHA-1, SCRAM-SHA-256, SCRAM-SHA-256, and their respective -PLUS variants) 
+  now properly parses extensions. No extensions are implemented by rsasl so all non-mandatory extensions are ignored.
+
+## Fixed
+- #65 — (SCRAM) InvalidAttribute error when faced with optional or mandatory extension attributes
+
 # [v2.3.0] — 2026-04-23
 
 [Changes rendered on Codeberg][v2.3.0/diff]
@@ -299,7 +310,9 @@ making this release possible.**
 
 [Upcoming Changes]: https://codeberg.org/dequbed/rsasl/src/branch/development
 <!-- next-url -->
-[Upcoming/diff]: https://codeberg.org/dequbed/rsasl/compare/v2.3.0...development
+[Upcoming/diff]: https://codeberg.org/dequbed/rsasl/compare/v2.3.1...development
+[v2.3.1]: https://codeberg.org/dequbed/rsasl/releases/tag/v2.3.1
+[v2.3.1/diff]: https://codeberg.org/dequbed/rsasl/compare/v2.3.0...v2.3.1
 [v2.3.0]: https://codeberg.org/dequbed/rsasl/releases/tag/v2.3.0
 [v2.3.0/diff]: https://codeberg.org/dequbed/rsasl/compare/v2.2.1...v2.3.0
 [v2.2.1]: https://codeberg.org/dequbed/rsasl/releases/tag/v2.2.1
