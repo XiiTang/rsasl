@@ -1,7 +1,9 @@
 # Boundless patches
 
-The `main` branch mirrors upstream. Boundless's required changes live on
-`boundless`, based on upstream rsasl 2.3.1 (`ee7065d92976ceb1fc1b0c27545f8a816e3de166`).
+The `main` branch mirrors upstream, which is https://codeberg.org/dequbed/rsasl;
+the GitHub repository dequbed/rsasl is archived and no longer updated.
+Boundless's required changes live on `boundless`, based on upstream rsasl
+2.3.1 (`ee7065d92976ceb1fc1b0c27545f8a816e3de166`).
 
 ## Short SCRAM server attributes return parse errors
 
