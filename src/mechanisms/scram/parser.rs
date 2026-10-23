@@ -354,6 +354,17 @@ pub struct ServerFirst<'scram> {
     pub iteration_count: &'scram [u8],
 }
 
+// A server attribute must have its two-byte prefix before either parser can
+// inspect it. Keep this check shared by server-first and server-final.
+fn next_server_attribute<'a>(
+    attributes: &mut impl Iterator<Item = &'a [u8]>,
+) -> Result<([u8; 2], &'a [u8]), ParseError> {
+    match attributes.next() {
+        Some([name, equals, value @ ..]) => Ok(([*name, *equals], value)),
+        _ => Err(ParseError::MissingAttributes),
+    }
+}
+
 impl<'scram> ServerFirst<'scram> {
     pub const fn new(
         client_nonce: &'scram [u8],
@@ -372,32 +383,29 @@ impl<'scram> ServerFirst<'scram> {
     pub fn parse(input: &'scram [u8]) -> Result<Self, ParseError> {
         let mut partiter = input.split(|b| matches!(b, b','));
 
-        let next = partiter.next().ok_or(ParseError::MissingAttributes)?;
-        if next.len() < 2 {
-            return Err(ParseError::MissingAttributes);
-        }
-        if &next[0..2] == b"m=" {
+        let (prefix, value) = next_server_attribute(&mut partiter)?;
+        if &prefix == b"m=" {
             return Err(ParseError::UnknownMandatoryExtensions);
         }
 
-        let nonce = if &next[0..2] == b"r=" {
-            &next[2..]
+        let nonce = if &prefix == b"r=" {
+            value
         } else {
-            return Err(ParseError::InvalidAttribute(next[0]));
+            return Err(ParseError::InvalidAttribute(prefix[0]));
         };
 
-        let next = partiter.next().ok_or(ParseError::MissingAttributes)?;
-        let salt = if &next[0..2] == b"s=" {
-            &next[2..]
+        let (prefix, value) = next_server_attribute(&mut partiter)?;
+        let salt = if &prefix == b"s=" {
+            value
         } else {
-            return Err(ParseError::InvalidAttribute(next[0]));
+            return Err(ParseError::InvalidAttribute(prefix[0]));
         };
 
-        let next = partiter.next().ok_or(ParseError::MissingAttributes)?;
-        let iteration_count = if &next[0..2] == b"i=" {
-            &next[2..]
+        let (prefix, value) = next_server_attribute(&mut partiter)?;
+        let iteration_count = if &prefix == b"i=" {
+            value
         } else {
-            return Err(ParseError::InvalidAttribute(next[0]));
+            return Err(ParseError::InvalidAttribute(prefix[0]));
         };
 
         // Input may contain more (non-mandatory) extensions. Since we don't implement any we
@@ -556,17 +564,17 @@ impl<'scram> ServerFinal<'scram> {
         // them and none of them can be mandatory so we are allowed to simply ignore all input
         // following the verifier or error
         let mut partiter = input.split(|b| matches!(b, b','));
-        let next = partiter.next().ok_or(ParseError::MissingAttributes)?;
+        let (prefix, value) = next_server_attribute(&mut partiter)?;
 
-        if &next[0..2] == b"v=" {
-            Ok(Self::Verifier(&next[2..]))
-        } else if &next[0..2] == b"e=" {
+        if &prefix == b"v=" {
+            Ok(Self::Verifier(value))
+        } else if &prefix == b"e=" {
             use ServerErrorValue::{
                 ChannelBindingNotSupported, ChannelBindingsDontMatch, ExtensionsNotSupported,
                 InvalidEncoding, InvalidProof, InvalidUsernameEncoding, NoResources, OtherError,
                 ServerDoesSupportChannelBinding, UnknownUser, UnsupportedChannelBindingType,
             };
-            let e = match &next[2..] {
+            let e = match value {
                 b"invalid-encoding" => InvalidEncoding,
                 b"extensions-not-supported" => ExtensionsNotSupported,
                 b"invalid-proof" => InvalidProof,
@@ -581,7 +589,7 @@ impl<'scram> ServerFinal<'scram> {
             };
             Ok(Self::Error(e))
         } else {
-            Err(ParseError::InvalidAttribute(next[0]))
+            Err(ParseError::InvalidAttribute(prefix[0]))
         }
     }
 
@@ -596,6 +604,31 @@ impl<'scram> ServerFinal<'scram> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn short_server_first_attributes_are_parse_errors() {
+        for input in [
+            b"".as_slice(),
+            b"r",
+            b",x=long",
+            b"r=x,,i=4096",
+            b"r=x,s,i=4096",
+            b"r=x,s=c2FsdA==,",
+            b"r=x,s=c2FsdA==,i",
+        ] {
+            assert_eq!(ServerFirst::parse(input), Err(ParseError::MissingAttributes));
+        }
+    }
+
+    #[test]
+    fn short_server_final_attributes_are_parse_errors() {
+        for input in [b"".as_slice(), b"v", b"e", b",x=long"] {
+            assert!(matches!(
+                ServerFinal::parse(input),
+                Err(ParseError::MissingAttributes)
+            ));
+        }
+    }
 
     #[test]
     fn test_parse_gs2_cbind_flag() {
