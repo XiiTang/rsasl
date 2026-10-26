@@ -25,11 +25,19 @@ pub enum MechanismErrorKind {
 /// Errors specific to a certain mechanism
 pub trait MechanismError: fmt::Debug + fmt::Display + Send + Sync + std::error::Error {
     fn kind(&self) -> MechanismErrorKind;
+    /// The mechanism's own outcome code, as the peer sent it, when it is a permissible value.
+    fn outcome_code(&self) -> Option<&str> {
+        None
+    }
 }
 #[cfg(not(feature = "std"))]
 /// Errors specific to a certain mechanism
 pub trait MechanismError: fmt::Debug + fmt::Display + Send + Sync {
     fn kind(&self) -> MechanismErrorKind;
+    /// The mechanism's own outcome code, as the peer sent it, when it is a permissible value.
+    fn outcome_code(&self) -> Option<&str> {
+        None
+    }
 }
 
 #[derive(Debug, Error)]

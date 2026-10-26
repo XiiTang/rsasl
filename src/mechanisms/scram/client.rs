@@ -2,6 +2,7 @@ use crate::alloc::{string::String, vec::Vec};
 use crate::callback::CallbackError;
 use crate::context::{Demand, DemandReply, EmptyProvider, Provider};
 use crate::error::{MechanismError, MechanismErrorKind, SessionError};
+use crate::io::Write;
 use crate::mechanism::Authentication;
 use crate::mechanisms::scram::parser::{
     ClientFinal, SaslName, ServerErrorValue, ServerFinal, ServerFirst,
@@ -15,7 +16,6 @@ use crate::session::{MechanismData, MessageSent, State};
 use crate::vectored_io::VectoredWriter;
 use base64::Engine;
 use core::marker::PhantomData;
-use crate::io::Write;
 use digest::crypto_common::BlockSizeUser;
 use digest::{Digest, FixedOutputReset};
 use rand::Rng;
@@ -444,7 +444,9 @@ impl<D: Digest + BlockSizeUser> WaitingServerFinal<D> {
                     Err(SessionError::MutualAuthenticationFailed)
                 }
             }
-            ServerFinal::Error(e) => Err(SCRAMError::ServerError(e).into()),
+            ServerFinal::Error(e, token) => {
+                Err(SCRAMError::ServerError(e, outcome_token(token)).into())
+            }
         }
     }
 }
@@ -502,7 +504,7 @@ pub enum ProtocolError {
     Base64Decode,
 }
 
-#[derive(Debug, Eq, PartialEq, Copy, Clone, Error)]
+#[derive(Debug, Eq, PartialEq, Clone, Error)]
 pub enum SCRAMError {
     #[error("SCRAM protocol error: {0}")]
     Protocol(ProtocolError),
@@ -513,15 +515,29 @@ pub enum SCRAMError {
         super::parser::ParseError,
     ),
     #[error("SCRAM outcome error: {0}")]
-    ServerError(ServerErrorValue),
+    ServerError(ServerErrorValue, Option<Box<str>>),
+}
+
+// RFC 5802 section 7: a non-empty UTF-8 value without NUL or comma; '=' is allowed.
+fn outcome_token(value: &[u8]) -> Option<Box<str>> {
+    if value.is_empty() || value.contains(&0) || value.contains(&b',') {
+        return None;
+    }
+    core::str::from_utf8(value).ok().map(Into::into)
 }
 
 impl MechanismError for SCRAMError {
+    fn outcome_code(&self) -> Option<&str> {
+        match self {
+            Self::ServerError(_, Some(token)) => Some(token),
+            _ => None,
+        }
+    }
     fn kind(&self) -> MechanismErrorKind {
         match self {
             Self::Protocol(_) => MechanismErrorKind::Protocol,
             Self::ParseError(_) => MechanismErrorKind::Parse,
-            Self::ServerError(_) => MechanismErrorKind::Outcome,
+            Self::ServerError(..) => MechanismErrorKind::Outcome,
         }
     }
 }
@@ -568,5 +584,28 @@ mod tests {
 
         assert_eq!(client_key, client_key2);
         assert_eq!(server_key, server_key2);
+    }
+}
+
+#[cfg(test)]
+mod outcome_tests {
+    use super::*;
+    #[test]
+    fn outcome_codes_are_permissible_values_only() {
+        for (value, expected) in [
+            (&b"foo-bar"[..], Some("foo-bar")),
+            ("café=x".as_bytes(), Some("café=x")),
+            (&b""[..], None),
+            (&b"a\0b"[..], None),
+            (&b"a,b"[..], None),
+            (&b"\xff"[..], None),
+        ] {
+            assert_eq!(outcome_token(value).as_deref(), expected);
+        }
+        for (value, expected) in [(&b"foo-bar"[..], Some("foo-bar")), (&b""[..], None)] {
+            let error = SCRAMError::ServerError(ServerErrorValue::OtherError, outcome_token(value));
+            assert_eq!(error.outcome_code(), expected);
+            assert!(matches!(error.kind(), MechanismErrorKind::Outcome));
+        }
     }
 }

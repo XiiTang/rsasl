@@ -2,6 +2,7 @@ use crate::alloc::format;
 use crate::alloc::{boxed::Box, string::String, vec::Vec};
 use crate::context::{Demand, DemandReply, Provider};
 use crate::error::{MechanismError, MechanismErrorKind, SessionError};
+use crate::io::Write;
 use crate::mechanism::Authentication;
 use crate::mechanisms::scram::client::{ProtocolError, SCRAMError};
 use crate::mechanisms::scram::parser::{
@@ -14,7 +15,6 @@ use crate::session::{MechanismData, MessageSent, State};
 use crate::vectored_io::VectoredWriter;
 use base64::Engine;
 use core::marker::PhantomData;
-use crate::io::Write;
 use digest::crypto_common::BlockSizeUser;
 use digest::generic_array::GenericArray;
 use digest::{Digest, FixedOutput, OutputSizeUser};
@@ -307,7 +307,7 @@ impl<D: Digest + BlockSizeUser + FixedOutput, const N: usize> WaitingClientFinal
                 .map_err(|_| SCRAMError::Protocol(ProtocolError::Base64Decode))?;
 
             if gs2_header[..] != cb[..] {
-                ServerFinal::Error(ServerErrorValue::ChannelBindingsDontMatch)
+                ServerFinal::server_error(ServerErrorValue::ChannelBindingsDontMatch)
             } else if let Some(remainder) = nonce.strip_prefix(&client_nonce[..]) {
                 if remainder == server_nonce
                     && proof.len() <= (<SimpleHmac<D> as OutputSizeUser>::output_size() * 4 / 3) + 3
@@ -360,15 +360,15 @@ impl<D: Digest + BlockSizeUser + FixedOutput, const N: usize> WaitingClientFinal
 
                         return Ok(());
                     }
-                    ServerFinal::Error(ServerErrorValue::InvalidProof)
+                    ServerFinal::server_error(ServerErrorValue::InvalidProof)
                 } else {
-                    ServerFinal::Error(ServerErrorValue::InvalidProof)
+                    ServerFinal::server_error(ServerErrorValue::InvalidProof)
                 }
             } else {
-                ServerFinal::Error(ServerErrorValue::InvalidProof)
+                ServerFinal::server_error(ServerErrorValue::InvalidProof)
             }
         } else {
-            ServerFinal::Error(ServerErrorValue::UnknownUser)
+            ServerFinal::server_error(ServerErrorValue::UnknownUser)
         };
 
         let mut vecw = VectoredWriter::new(msg.to_ioslices());

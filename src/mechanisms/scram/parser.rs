@@ -555,10 +555,13 @@ impl Display for ServerErrorValue {
 
 pub enum ServerFinal<'scram> {
     Verifier(&'scram [u8]),
-    Error(ServerErrorValue),
+    Error(ServerErrorValue, &'scram [u8]),
 }
 
 impl<'scram> ServerFinal<'scram> {
+    pub const fn server_error(value: ServerErrorValue) -> Self {
+        Self::Error(value, value.as_bytes())
+    }
     pub fn parse(input: &'scram [u8]) -> Result<Self, ParseError> {
         // There may be extensions following this initial attribute, but we don't implement any of
         // them and none of them can be mandatory so we are allowed to simply ignore all input
@@ -587,7 +590,7 @@ impl<'scram> ServerFinal<'scram> {
                 b"no-resources" => NoResources,
                 _ => OtherError,
             };
-            Ok(Self::Error(e))
+            Ok(Self::Error(e, value))
         } else {
             Err(ParseError::InvalidAttribute(prefix[0]))
         }
@@ -596,7 +599,7 @@ impl<'scram> ServerFinal<'scram> {
     pub const fn to_ioslices(&self) -> [&'scram [u8]; 2] {
         match self {
             Self::Verifier(v) => [b"v=", v],
-            Self::Error(e) => [b"e=", e.as_bytes()],
+            Self::Error(_, token) => [b"e=", token],
         }
     }
 }
@@ -605,6 +608,51 @@ impl<'scram> ServerFinal<'scram> {
 mod tests {
     use super::*;
 
+    #[test]
+    fn server_final_errors_keep_their_value() {
+        for (bytes, expected, token) in [
+            (
+                &b"e=foo-bar"[..],
+                ServerErrorValue::OtherError,
+                &b"foo-bar"[..],
+            ),
+            (
+                &b"e=unknown-user,x=1"[..],
+                ServerErrorValue::UnknownUser,
+                &b"unknown-user"[..],
+            ),
+            (&b"e="[..], ServerErrorValue::OtherError, &b""[..]),
+            (&b"e=a\0b"[..], ServerErrorValue::OtherError, &b"a\0b"[..]),
+        ] {
+            let ServerFinal::Error(value, original) = ServerFinal::parse(bytes).unwrap() else {
+                panic!("expected error")
+            };
+            assert_eq!(value, expected);
+            assert_eq!(original, token);
+        }
+    }
+    #[test]
+    fn server_error_bytes_are_unchanged() {
+        use ServerErrorValue::*;
+        for value in [
+            InvalidEncoding,
+            ExtensionsNotSupported,
+            InvalidProof,
+            ChannelBindingsDontMatch,
+            ServerDoesSupportChannelBinding,
+            ChannelBindingNotSupported,
+            UnsupportedChannelBindingType,
+            UnknownUser,
+            InvalidUsernameEncoding,
+            NoResources,
+            OtherError,
+        ] {
+            assert_eq!(
+                ServerFinal::server_error(value).to_ioslices().concat(),
+                [b"e=", value.as_bytes()].concat()
+            );
+        }
+    }
     #[test]
     fn short_server_first_attributes_are_parse_errors() {
         for input in [
@@ -616,7 +664,10 @@ mod tests {
             b"r=x,s=c2FsdA==,",
             b"r=x,s=c2FsdA==,i",
         ] {
-            assert_eq!(ServerFirst::parse(input), Err(ParseError::MissingAttributes));
+            assert_eq!(
+                ServerFirst::parse(input),
+                Err(ParseError::MissingAttributes)
+            );
         }
     }
 
@@ -653,11 +704,15 @@ mod tests {
     #[test]
     fn test_server_final_parsing() {
         let case1 = b"v=AA";
-        let ServerFinal::Verifier(b"AA") = ServerFinal::parse(case1).expect("Failed to parse case 1") else {
+        let ServerFinal::Verifier(b"AA") =
+            ServerFinal::parse(case1).expect("Failed to parse case 1")
+        else {
             panic!("parsed case 1 incorrectly")
         };
         let case2 = b"e=invalid-encoding";
-        let ServerFinal::Error(ServerErrorValue::InvalidEncoding) = ServerFinal::parse(case2).expect("Failed to parse case 2") else {
+        let ServerFinal::Error(ServerErrorValue::InvalidEncoding, b"invalid-encoding") =
+            ServerFinal::parse(case2).expect("Failed to parse case 2")
+        else {
             panic!("parsed case 2 incorrectly")
         };
     }
@@ -665,7 +720,12 @@ mod tests {
     #[test]
     fn test_extensions_client_first() {
         let client_first = b"n,,n=testuser,r=ClientNonce,t=extension1,y=extension2,r=extension3";
-        let ClientFirstMessage { cbflag, authzid, username, nonce } = ClientFirstMessage::parse(client_first).expect("Failed to parse client_first");
+        let ClientFirstMessage {
+            cbflag,
+            authzid,
+            username,
+            nonce,
+        } = ClientFirstMessage::parse(client_first).expect("Failed to parse client_first");
         assert_eq!(cbflag, GS2CBindFlag::NotSupported);
         assert_eq!(authzid, None);
         assert_eq!(username, "testuser");
@@ -674,8 +734,14 @@ mod tests {
 
     #[test]
     fn test_extensions_server_first() {
-        let server_first = b"r=ServerNonce,s=PasswordSalt,i=1234,r=extension1,s=extension2,i=extension3";
-        let ServerFirst { nonce, server_nonce, salt, iteration_count } = ServerFirst::parse(server_first).expect("Failed to parse server_first");
+        let server_first =
+            b"r=ServerNonce,s=PasswordSalt,i=1234,r=extension1,s=extension2,i=extension3";
+        let ServerFirst {
+            nonce,
+            server_nonce,
+            salt,
+            iteration_count,
+        } = ServerFirst::parse(server_first).expect("Failed to parse server_first");
         assert_eq!(nonce, b"ServerNonce");
         assert_eq!(server_nonce, None);
         assert_eq!(salt, b"PasswordSalt");
@@ -685,7 +751,11 @@ mod tests {
     #[test]
     fn test_extensions_client_final() {
         let client_final = b"c=AA,r=ClientNonceServerNonce,c=extension1,r=extension2,p=BB";
-        let ClientFinal { channel_binding, nonce, proof } = ClientFinal::parse(client_final).expect("Failed to parse client_final");
+        let ClientFinal {
+            channel_binding,
+            nonce,
+            proof,
+        } = ClientFinal::parse(client_final).expect("Failed to parse client_final");
         assert_eq!(channel_binding, b"AA");
         assert_eq!(nonce, b"ClientNonceServerNonce");
         assert_eq!(proof, b"BB");
@@ -703,6 +773,9 @@ mod tests {
     #[test]
     fn test_fail_unknown_mandatory_extension() {
         let client_first = b"n,,m=MandatoryExtension,n=testuser,r=ClientNonce,t=extension1,y=extension2,r=extension3";
-        assert_eq!(ClientFirstMessage::parse(client_first), Err(ParseError::UnknownMandatoryExtensions));
+        assert_eq!(
+            ClientFirstMessage::parse(client_first),
+            Err(ParseError::UnknownMandatoryExtensions)
+        );
     }
 }

@@ -5,6 +5,23 @@ the GitHub repository dequbed/rsasl is archived and no longer updated.
 Boundless's required changes live on `boundless`, based on upstream rsasl
 2.3.1 (`ee7065d92976ceb1fc1b0c27545f8a816e3de166`).
 
+## SCRAM server-final error value kept for its outcome
+
+W5-D12 Q11 requires the peer's permissible `e=` value as the authentication
+outcome code. Like PostgreSQL libpq's
+[`read_server_final_message`](https://github.com/postgres/postgres/blob/REL_18_STABLE/src/interfaces/libpq/fe-auth-scram.c),
+the parser retains the original value before normalizing known errors. The
+private client `outcome_token` is its one eligibility check: RFC 5802 section 7
+allows non-empty UTF-8 without NUL or comma, including `=`. The defaulted
+`MechanismError::outcome_code` exposes only that checked value; Display keeps
+the normalized diagnostic. The server uses `ServerFinal::server_error` to
+preserve its existing bytes.
+
+Regression evidence: `server_final_errors_keep_their_value` tests known,
+extension, empty and NUL values; `outcome_codes_are_permissible_values_only`
+tests the check and trait projection, including UTF-8 and `=`;
+`server_error_bytes_are_unchanged` checks all eleven server error encodings.
+
 ## Short SCRAM server attributes return parse errors
 
 A peer's empty or one-byte server-final attribute panics when its prefix is
